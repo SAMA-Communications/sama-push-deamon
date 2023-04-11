@@ -10,7 +10,7 @@
     "url": "git@github.com:SAMA-Communications/sama-push-deamon.git"
   },
   "author": "Igor Khomenko",
-  "license": "ISC",
+  "license": "GPL-3.0 license",
   "dependencies": {
     "node-pushnotifications": "^2.0.3"
   }
