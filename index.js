@@ -23,7 +23,6 @@ const settings = {
   isAlwaysUseFCM: false,
 };
 
-//TODO: move to new file
 const pushNotificationProcess = async (job, done) => {
   const { devices, message } = job.data;
 
@@ -37,9 +36,8 @@ const pushNotificationProcess = async (job, done) => {
 
   //TODO: reed fields for notification from queue, also add list of allowed fileds for message
   const dataObject = {
-    title: "Message title",
-    topic: "topic",
-    body: message.body,
+    title: message.body || "Title",
+    body: message.body || "Body",
     message: "payload",
   };
 
