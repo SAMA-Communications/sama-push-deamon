@@ -26,13 +26,17 @@ const settings = {
 const pushNotificationProcess = async (job, done) => {
   const { devices, message } = job.data;
 
-  const regDevices = devices.map((el) => {
-    return {
-      endpoint: el.web_endpoint,
-      expirationTime: null,
-      keys: { p256dh: el.web_key_p256dh, auth: el.web_key_auth },
-    };
-  });
+  const regDevices = [];
+  for (const userId in devices) {
+    const uDevices = devices[userId];
+    uDevices.forEach((el) => {
+      regDevices.push({
+        endpoint: el.web_endpoint,
+        expirationTime: null,
+        keys: { p256dh: el.web_key_p256dh, auth: el.web_key_auth },
+      });
+    });
+  }
 
   //TODO: reed fields for notification from queue, also add list of allowed fileds for message
   const dataObject = {
