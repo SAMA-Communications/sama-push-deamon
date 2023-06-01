@@ -1,8 +1,10 @@
 import PushNotifications from "node-pushnotifications";
 import Queue from "bull";
 
-const pushNotificationQueue = new Queue("notification", process.env.REDIS_URL, {
-  redis: { maxRetriesPerRequest: null, enableReadyCheck: false },
+const pushNotificationQueue = new Queue("notification", {
+  redis: {
+    url: process.env.REDIS_URL,
+  },
 });
 
 const settings = {
