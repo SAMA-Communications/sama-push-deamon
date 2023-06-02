@@ -41,10 +41,15 @@ const pushNotificationProcess = async (job, done) => {
   };
 
   const push = new PushNotifications(settings);
-  push.send(regDevices, dataObject, (err, result) =>
-    console.log(err ? err : result)
-  );
+  push.send(regDevices, dataObject, (err, result) => {
+    if (!err) {
+      result = result[0];
+      result.message = JSON.stringify(result.message);
+    }
+    console.log(err ? err : result);
+  });
 
+  job.progress(100);
   done();
 };
 
