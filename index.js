@@ -8,6 +8,7 @@ const settings = {
     vapidDetails: {
       subject: process.env.SUBJECT,
       publicKey: process.env.PUBLIC_VAPID_KEY,
+      privateKey: process.env.PRIVATE_VAPID_KEY,
     },
     gcmAPIKey: "gcmkey",
     TTL: 2419200,
