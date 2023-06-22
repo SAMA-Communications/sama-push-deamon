@@ -1,5 +1,15 @@
 import PushNotifications from "node-pushnotifications";
 import Queue from "bull";
+import { connectToDB } from "./lib/db.js";
+
+connectToDB(async (err) => {
+  if (err) {
+    console.error("[connectToDB] Error", err);
+    process.exit();
+  } else {
+    console.log("[connectToDB] Ok");
+  }
+});
 
 const pushNotificationQueue = new Queue("notification", process.env.REDIS_URL);
 
@@ -42,11 +52,15 @@ const pushNotificationProcess = async (job, done) => {
 
   const push = new PushNotifications(settings);
   push.send(regDevices, dataObject, (err, result) => {
-    if (!err) {
-      result = result[0];
-      result.message = JSON.stringify(result.message);
+    console.log(`[err] `, err);
+    console.log(`[result]`, result);
+
+    if (err) {
+      done(new Error("error"));
     }
-    console.log(err ? err : result);
+
+    result = result[0];
+    result.message = JSON.stringify(result.message);
   });
 
   job.progress(100);
