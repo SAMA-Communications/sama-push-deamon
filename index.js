@@ -34,17 +34,22 @@ const pushNotificationProcess = async (job, done) => {
   }
 
   //TODO: reed fields for notification from queue, also add list of allowed fileds for message
-  const dataObject = {
-    title: message.title || "Title",
-    body: message.body || "Body",
+  const dataObject = message || {
+    title: "Title",
+    body: "Body",
     message: "payload",
   };
 
   const push = new PushNotifications(settings);
-  push.send(regDevices, dataObject, (err, result) =>
-    console.log(err ? err : result)
-  );
+  push.send(regDevices, dataObject, (err, result) => {
+    if (!err) {
+      result = result[0];
+      result.message = JSON.stringify(result.message);
+    }
+    console.log(err ? err : result);
+  });
 
+  job.progress(100);
   done();
 };
 
