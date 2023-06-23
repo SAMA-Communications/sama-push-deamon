@@ -51,19 +51,27 @@ const pushNotificationProcess = async (job, done) => {
   };
 
   const push = new PushNotifications(settings);
-  push.send(regDevices, dataObject, (err, result) => {
-    console.log(`[err] `, err);
-    console.log(`[result]`, result);
+  push
+    .send(regDevices, dataObject)
+    .then((result) => {
+      result = result[0];
 
-    if (err) {
-      done(new Error("error"));
-    }
+      const devices = [];
+      result.message = result.message.filter((device) => {
+        devices.push(device.regId);
+        if (device.error) {
+          device.regId = device.regId.endpoint;
+          return true;
+        }
+        return false;
+      });
+      result["allDevices"] = devices;
 
-    result = result[0];
-    result.message = JSON.stringify(result.message);
-  });
+      console.log("[pushNotifications]", result);
+    })
+    .catch((err) => console.error(`[Error] `, err));
 
-  job.progress(100);
+  // job.progress(100);
   done();
 };
 
