@@ -65,7 +65,8 @@ const pushNotificationProcess = async (job, done) => {
         }
         return false;
       });
-      result["allDevices"] = devices;
+      result["devices"] = devices;
+      !result.message.length && delete result.message;
 
       console.log("[pushNotifications]", result);
     })
