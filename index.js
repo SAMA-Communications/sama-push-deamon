@@ -1,7 +1,6 @@
 import PushNotifications from "node-pushnotifications";
 import PushSubscription from "./model/push_subscription.js";
 import Queue from "bull";
-import calcPercentOfProgress from "./utils/calc_percent_of_progress.js";
 import { connectToDB } from "./lib/db.js";
 
 connectToDB(async (err) => {
@@ -53,31 +52,31 @@ const pushNotificationProcess = async (job, done) => {
   };
 
   const push = new PushNotifications(settings);
-  push
-    .send(regDevices, dataObject)
-    .then((result) => {
-      result = result[0];
 
-      const devices = [];
-      result.message = result.message.filter(async (device) => {
-        devices.push(device.regId);
-        if (device.error) {
-          device.regId = device.regId.endpoint;
-          const pushSubscriptionRecord = await PushSubscription.findOne({
-            web_endpoint: device.regId,
-          });
-          pushSubscriptionRecord && (await pushSubscriptionRecord.delete());
-          return true;
+  try {
+    const results = await push.send(regDevices, dataObject);
+    const result = results[0];
+
+    for (let message of result.message) {
+      if (message.error) {
+        const pushSubscriptionRecord = await PushSubscription.findOne({
+          web_endpoint: message.regId.endpoint,
+        });
+        if (pushSubscriptionRecord) {
+          await pushSubscriptionRecord.delete();
+          console.log(
+            "[pushNotificationProcess] removed failed subscription",
+            message
+          );
         }
-        return false;
-      });
-      result["devices"] = devices;
-      !result.message.length && delete result.message;
+      }
+    }
+    console.log("[pushNotificationProcess] DONE");
+  } catch (error) {
+    console.error(`[pushNotificationProcess] error`, error);
+  }
 
-      console.log("[pushNotifications]", result);
-      job.progress(calcPercentOfProgress(result.success, result.failure));
-    })
-    .catch((err) => console.error(`[Error] `, err));
+  job.progress(100);
 
   done();
 };
