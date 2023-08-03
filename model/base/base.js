@@ -1,4 +1,4 @@
-import { getDb } from "../../lib/db.js";
+import db from "../../lib/db.js";
 import { slice } from "../../utils/req_res_utils.js";
 
 export default class BaseModel {
@@ -17,7 +17,10 @@ export default class BaseModel {
 
   static async findOne(query) {
     try {
-      const record = await getDb().collection(this.collection).findOne(query);
+      const record = await db
+        .getDb()
+        .collection(this.collection)
+        .findOne(query);
       return record ? new this(record) : null;
     } catch (e) {
       return null;
@@ -25,7 +28,8 @@ export default class BaseModel {
   }
 
   async delete() {
-    await getDb()
+    await db
+      .getDb()
       .collection(this.constructor.collection)
       .deleteOne({ _id: this.params._id });
   }

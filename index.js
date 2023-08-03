@@ -1,9 +1,9 @@
 import PushNotifications from "node-pushnotifications";
 import PushSubscription from "./model/push_subscription.js";
 import Queue from "bull";
-import { connectToDB } from "./lib/db.js";
+import db from "./lib/db.js";
 
-connectToDB(async (err) => {
+db.connectToDB(async (err) => {
   if (err) {
     console.error("[connectToDB] Error", err);
     process.exit();
