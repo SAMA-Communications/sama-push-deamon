@@ -1,5 +1,16 @@
 import PushNotifications from "node-pushnotifications";
+import PushSubscription from "./model/push_subscription.js";
 import Queue from "bull";
+import db from "./lib/db.js";
+
+db.connectToDB(async (err) => {
+  if (err) {
+    console.error("[connectToDB] Error", err);
+    process.exit();
+  } else {
+    console.log("[connectToDB] Ok");
+  }
+});
 
 const pushNotificationQueue = new Queue("notification", process.env.REDIS_URL);
 
@@ -34,16 +45,38 @@ const pushNotificationProcess = async (job, done) => {
   }
 
   //TODO: reed fields for notification from queue, also add list of allowed fileds for message
-  const dataObject = {
-    title: message.title || "Title",
-    body: message.body || "Body",
+  const dataObject = message || {
+    title: "Title",
+    body: "Body",
     message: "payload",
   };
 
   const push = new PushNotifications(settings);
-  push.send(regDevices, dataObject, (err, result) =>
-    console.log(err ? err : result)
-  );
+
+  try {
+    const results = await push.send(regDevices, dataObject);
+    const result = results[0];
+
+    for (let message of result.message) {
+      if (message.error) {
+        const pushSubscriptionRecord = await PushSubscription.findOne({
+          web_endpoint: message.regId.endpoint,
+        });
+        if (pushSubscriptionRecord) {
+          await pushSubscriptionRecord.delete();
+          console.log(
+            "[pushNotificationProcess] removed failed subscription",
+            message
+          );
+        }
+      }
+    }
+    console.log("[pushNotificationProcess] DONE");
+  } catch (error) {
+    console.error(`[pushNotificationProcess] error`, error);
+  }
+
+  job.progress(100);
 
   done();
 };
