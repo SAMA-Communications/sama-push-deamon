@@ -18,3 +18,10 @@ There are also other components. Make sure to check [Deploying SAMA chat server 
 ## License
 
 [GPL-3.0](LICENSE)
+
+## Help us!
+
+Any thoughts, feedback is welcome! Please create a GitHub issue for any feedback you have.
+
+Want to support us with [some coffee?](https://www.buymeacoffee.com/khomenkoigor). Will be much appreciated! 
+
