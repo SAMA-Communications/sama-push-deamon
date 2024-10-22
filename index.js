@@ -2,6 +2,7 @@ import PushNotifications from "node-pushnotifications";
 import PushSubscription from "./model/push_subscription.js";
 import Queue from "bull";
 import db from "./lib/db.js";
+import fs from "fs";
 
 db.connectToDB(async (err) => {
   if (err) {
@@ -17,12 +18,14 @@ const pushNotificationQueue = new Queue("notification", process.env.REDIS_URL);
 const settings = {
   fcm: {
     appName: process.env.FCM_APP_NAME,
-    serviceAccountKey: require("./certs/firebase-sama-project-key.json"),
+    serviceAccountKey: fs.readFileSync(
+      "./certs/firebase-sama-project-key.json"
+    ),
     credential: null,
   },
   apn: {
     token: {
-      key: require("./certs/apns-sama-project-key.json"),
+      key: fs.readFileSync("./certs/apns-sama-project-key.json"),
       keyId: process.env.APN_KEY_ID,
       teamId: process.env.APN_TEAM_ID,
     },
