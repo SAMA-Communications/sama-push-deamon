@@ -15,6 +15,19 @@ db.connectToDB(async (err) => {
 const pushNotificationQueue = new Queue("notification", process.env.REDIS_URL);
 
 const settings = {
+  fcm: {
+    appName: process.env.FCM_APP_NAME,
+    serviceAccountKey: require("./certs/firebase-sama-project-key.json"),
+    credential: null,
+  },
+  apn: {
+    token: {
+      key: require("./certs/apns-sama-project-key.json"),
+      keyId: process.env.APN_KEY_ID,
+      teamId: process.env.APN_TEAM_ID,
+    },
+    production: process.env.APN_IS_PRODUCTION,
+  },
   web: {
     vapidDetails: {
       subject: process.env.SUBJECT,
