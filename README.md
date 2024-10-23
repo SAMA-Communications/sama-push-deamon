@@ -10,8 +10,9 @@ Currently, only Web pushes are supported.
 
 - Copy `.env.example` to `.env`
 - generate VAPID keys via `npx web-push generate-vapid-keys` and set Public Key to `PUBLIC_VAPID_KEY` and Private Key to `PRIVATE_VAPID_KEY` in `.env` file. The Public Key value should be the same to what is used in **sama-client**
-- add your firebase app name and apple keys to other variables
-- upload the key files to the `.certs` folder, rename the file names to `firebase-sama-project-key.json` and `apns-sama-project-key.json`
+- set your Firebase app name in `FCM_APP_NAME` env and Apple keys in `APN_KEY_ID`, `APN_TEAM_ID` envs. Also provide `APN_IS_PRODUCTION` env.
+- put the key files to the `.certs` folder, rename the files to `firebase-sama-project-key.json` and `apns-sama-project-key.json`
+- make sure that `SAMA_PUSH_QUEUE_NAME` matches the variable `SAMA_NATIVE_PUSH_QUEUE_NAME` located in `.env` of your server
 - run `npm install`
 - run `npm run start`
 
