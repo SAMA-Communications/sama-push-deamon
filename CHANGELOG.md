@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.0
+
+### Features
+
+- Implemented support for sending notifications to different platforms: `web`, `ios`, `android`
+- Implemented cleaning of messages that were not delivered
+- Added new variables to enviroment
+
+### Docker
+
+- Updated release workflow
+
 ## 0.0.1 (Example)
 
 ### Important Notes
