@@ -4,7 +4,7 @@ import Queue from "bull";
 import db from "./lib/db.js";
 import decodeBase64 from "./utils/decode_base64.js";
 import fs from "fs";
-import admin from "firebase-admin";
+import { applicationDefault, initializeApp } from "firebase-admin/app";
 
 import serviceAccount from "./certs/firebase-sama-project-key.json" assert { type: "json" };
 
@@ -17,8 +17,9 @@ db.connectToDB(async (err) => {
   }
 });
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+initializeApp({
+  credential: applicationDefault,
+  projectId: process.env.FCM_APP_NAME,
 });
 
 const pushNotificationQueue = new Queue(
@@ -33,7 +34,7 @@ const settings = {
       "./certs/firebase-sama-project-key.json",
       "utf8"
     ),
-    credential: admin.credential,
+    credential: null,
   },
   apn: {
     token: {
@@ -102,7 +103,7 @@ const pushNotificationProcess = async (job, done) => {
           web_endpoint: message.regId.endpoint,
         });
         if (pushSubscriptionRecord) {
-          await pushSubscriptionRecord.delete();
+          // await pushSubscriptionRecord.delete();
           console.log(
             "[pushNotificationProcess] removed failed subscription",
             message
