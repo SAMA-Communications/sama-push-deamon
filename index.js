@@ -63,7 +63,7 @@ const pushNotificationProcess = async (job, done) => {
       case "ios":
         registeredDevices.push(device.device_token);
         break;
-      case "androind":
+      case "android":
         registeredDevices.push(device.device_token);
         break;
       case "web":
