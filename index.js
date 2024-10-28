@@ -55,10 +55,7 @@ const pushNotificationProcess = async (job, done) => {
   const { devices, message, platform } = job.data;
   const registeredDevices = [];
 
-  console.log(message, platform);
-
   for (const device of devices) {
-    console.log(device, platform);
     switch (platform) {
       case "ios":
         registeredDevices.push(device.device_token);
