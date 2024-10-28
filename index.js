@@ -6,7 +6,7 @@ import decodeBase64 from "./utils/decode_base64.js";
 import fs from "fs";
 import admin from "firebase-admin";
 
-import serviceAccount from "./certs/apns-sama-project-key.json" assert { type: "json" };
+import serviceAccount from "./certs/firebase-sama-project-key.json" assert { type: "json" };
 
 db.connectToDB(async (err) => {
   if (err) {
