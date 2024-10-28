@@ -23,13 +23,14 @@ const settings = {
   fcm: {
     appName: process.env.FCM_APP_NAME,
     serviceAccountKey: fs.readFileSync(
-      "./certs/firebase-sama-project-key.json"
+      "./certs/firebase-sama-project-key.json",
+      "utf8"
     ),
     credential: null,
   },
   apn: {
     token: {
-      key: fs.readFileSync("./certs/apns-sama-project-key.json"),
+      key: fs.readFileSync("./certs/apns-sama-project-key.json", "utf8"),
       keyId: process.env.APN_KEY_ID,
       teamId: process.env.APN_TEAM_ID,
     },
