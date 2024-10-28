@@ -60,7 +60,7 @@ const pushNotificationProcess = async (job, done) => {
       case "ios":
         registeredDevices.push(device.device_token);
         break;
-      case "androind":
+      case "android":
         registeredDevices.push(device.device_token);
         break;
       case "web":
@@ -80,6 +80,11 @@ const pushNotificationProcess = async (job, done) => {
 
   const push = new PushNotifications(settings);
 
+  const closeJob = () => {
+    job.progress(100);
+    done();
+  };
+
   try {
     const sentPushes = (await push.send(registeredDevices, pushMessage))[0];
 
@@ -94,6 +99,7 @@ const pushNotificationProcess = async (job, done) => {
             "[pushNotificationProcess] removed failed subscription",
             message
           );
+          closeJob();
         }
       }
     }
@@ -101,10 +107,7 @@ const pushNotificationProcess = async (job, done) => {
   } catch (error) {
     console.error(`[pushNotificationProcess] error`, error);
   }
-
-  job.progress(100);
-
-  done();
+  closeJob();
 };
 
 pushNotificationQueue.process(pushNotificationProcess);
