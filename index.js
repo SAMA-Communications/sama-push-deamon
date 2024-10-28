@@ -55,7 +55,10 @@ const pushNotificationProcess = async (job, done) => {
   const { devices, message, platform } = job.data;
   const registeredDevices = [];
 
+  console.log(message, platform);
+
   for (const device of devices) {
+    console.log(device, platform);
     switch (platform) {
       case "ios":
         registeredDevices.push(device.device_token);
@@ -80,6 +83,11 @@ const pushNotificationProcess = async (job, done) => {
 
   const push = new PushNotifications(settings);
 
+  const closeJob = () => {
+    job.progress(100);
+    done();
+  };
+
   try {
     const sentPushes = (await push.send(registeredDevices, pushMessage))[0];
 
@@ -94,6 +102,7 @@ const pushNotificationProcess = async (job, done) => {
             "[pushNotificationProcess] removed failed subscription",
             message
           );
+          closeJob();
         }
       }
     }
@@ -101,10 +110,7 @@ const pushNotificationProcess = async (job, done) => {
   } catch (error) {
     console.error(`[pushNotificationProcess] error`, error);
   }
-
-  job.progress(100);
-
-  done();
+  closeJob();
 };
 
 pushNotificationQueue.process(pushNotificationProcess);
