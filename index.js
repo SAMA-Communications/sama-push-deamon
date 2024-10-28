@@ -5,9 +5,8 @@ import db from "./lib/db.js";
 import decodeBase64 from "./utils/decode_base64.js";
 import fs from "fs";
 
-console.log(
-  fs.readFileSync("./certs/firebase-sama-project-key.json", "utf8").project_id
-);
+const test = fs.readFileSync("./certs/firebase-sama-project-key.json", "utf8");
+console.log(test);
 
 db.connectToDB(async (err) => {
   if (err) {
