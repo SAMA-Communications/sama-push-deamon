@@ -4,6 +4,9 @@ import Queue from "bull";
 import db from "./lib/db.js";
 import decodeBase64 from "./utils/decode_base64.js";
 import fs from "fs";
+import admin from "firebase-admin";
+
+import serviceAccount from "./certs/apns-sama-project-key.json" assert { type: "json" };
 
 db.connectToDB(async (err) => {
   if (err) {
@@ -12,6 +15,10 @@ db.connectToDB(async (err) => {
   } else {
     console.log("[connectToDB] Ok");
   }
+});
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
 });
 
 const pushNotificationQueue = new Queue(
@@ -26,7 +33,7 @@ const settings = {
       "./certs/firebase-sama-project-key.json",
       "utf8"
     ),
-    credential: null,
+    credential: admin.credential,
   },
   apn: {
     token: {
