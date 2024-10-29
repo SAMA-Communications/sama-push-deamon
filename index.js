@@ -4,9 +4,8 @@ import Queue from "bull";
 import db from "./lib/db.js";
 import decodeBase64 from "./utils/decode_base64.js";
 import fs from "fs";
-import { applicationDefault, initializeApp } from "firebase-admin/app";
 
-import serviceAccount from "./certs/firebase-sama-project-key.json" assert { type: "json" };
+import serviceAccountKey from "./certs/firebase-sama-project-key.json" assert { type: "json" };
 
 db.connectToDB(async (err) => {
   if (err) {
@@ -17,11 +16,6 @@ db.connectToDB(async (err) => {
   }
 });
 
-initializeApp({
-  credential: applicationDefault,
-  projectId: process.env.FCM_APP_NAME,
-});
-
 const pushNotificationQueue = new Queue(
   process.env.SAMA_PUSH_QUEUE_NAME,
   process.env.REDIS_URL
@@ -30,10 +24,7 @@ const pushNotificationQueue = new Queue(
 const settings = {
   fcm: {
     appName: process.env.FCM_APP_NAME,
-    serviceAccountKey: fs.readFileSync(
-      "./certs/firebase-sama-project-key.json",
-      "utf8"
-    ),
+    serviceAccountKey,
     credential: null,
   },
   apn: {
