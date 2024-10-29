@@ -94,7 +94,7 @@ const pushNotificationProcess = async (job, done) => {
           web_endpoint: message.regId.endpoint,
         });
         if (pushSubscriptionRecord) {
-          // await pushSubscriptionRecord.delete();
+          await pushSubscriptionRecord.delete();
           console.log(
             "[pushNotificationProcess] removed failed subscription",
             message
