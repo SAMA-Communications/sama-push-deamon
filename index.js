@@ -5,6 +5,8 @@ import db from "./lib/db.js";
 import decodeBase64 from "./utils/decode_base64.js";
 import fs from "fs";
 
+import serviceAccountKey from "./certs/firebase-sama-project-key.json" assert { type: "json" };
+
 db.connectToDB(async (err) => {
   if (err) {
     console.error("[connectToDB] Error", err);
@@ -22,14 +24,12 @@ const pushNotificationQueue = new Queue(
 const settings = {
   fcm: {
     appName: process.env.FCM_APP_NAME,
-    serviceAccountKey: fs.readFileSync(
-      "./certs/firebase-sama-project-key.json"
-    ),
+    serviceAccountKey,
     credential: null,
   },
   apn: {
     token: {
-      key: fs.readFileSync("./certs/apns-sama-project-key.json"),
+      key: fs.readFileSync("./certs/apns-sama-project-key.json", "utf8"),
       keyId: process.env.APN_KEY_ID,
       teamId: process.env.APN_TEAM_ID,
     },
