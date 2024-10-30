@@ -88,7 +88,7 @@ const pushNotificationProcess = async (job, done) => {
 
     switch (platform) {
       case "android":
-        decodedMessage = { data: { ...decodedMessage } };
+        decodedMessage = { custom: { ...decodedMessage } };
         break;
     }
 
