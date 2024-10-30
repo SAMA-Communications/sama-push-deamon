@@ -6,6 +6,7 @@ import decodeBase64 from "./utils/decode_base64.js";
 import fs from "fs";
 
 import serviceAccountKey from "./certs/firebase-sama-project-key.json" assert { type: "json" };
+import { title } from "process";
 
 db.connectToDB(async (err) => {
   if (err) {
@@ -88,7 +89,11 @@ const pushNotificationProcess = async (job, done) => {
 
     switch (platform) {
       case "android":
-        decodedMessage = { custom: { ...decodedMessage } };
+        decodedMessage = {
+          title: decodedMessage.title,
+          body: decodedMessage.body,
+          custom: { cid: decodedMessage.cid },
+        };
         break;
     }
 
