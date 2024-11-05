@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+### Improvements
+
+- Updated `node-pushnotifications` to version 3.1.1
+- Implemented support for FCM and APN notifications
+- Implemented sorting of event notifications by `paltfrom`.
+
 ## 0.1.0
 
 ### Features
