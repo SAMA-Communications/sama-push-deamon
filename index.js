@@ -55,6 +55,13 @@ const pushNotificationProcess = async (job, done) => {
   const { devices, message } = job.data;
   const registeredDevices = { ios: [], android: [], web: [] };
 
+  const closeJob = () => {
+    job.progress(100);
+    done();
+  };
+
+  if (devices?.length) closeJob();
+
   for (const device of devices) {
     switch (device.platform) {
       case "ios":
@@ -76,11 +83,6 @@ const pushNotificationProcess = async (job, done) => {
 
   const push = new PushNotifications(settings);
 
-  const closeJob = () => {
-    job.progress(100);
-    done();
-  };
-
   for (const platform in registeredDevices) {
     if (!registeredDevices[platform].length) continue;
 
@@ -93,6 +95,7 @@ const pushNotificationProcess = async (job, done) => {
     }
 
     const pushMessage = decodedMessage || defaultPushMessage;
+    console.log("pushMessage", pushMessage);
 
     try {
       const sentPushes = (
