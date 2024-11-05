@@ -5,6 +5,8 @@ import db from "./lib/db.js";
 import decodeBase64 from "./utils/decode_base64.js";
 import fs from "fs";
 
+import serviceAccountKey from "./certs/firebase-sama-project-key.json" assert { type: "json" };
+
 db.connectToDB(async (err) => {
   if (err) {
     console.error("[connectToDB] Error", err);
@@ -22,14 +24,12 @@ const pushNotificationQueue = new Queue(
 const settings = {
   fcm: {
     appName: process.env.FCM_APP_NAME,
-    serviceAccountKey: fs.readFileSync(
-      "./certs/firebase-sama-project-key.json"
-    ),
+    serviceAccountKey,
     credential: null,
   },
   apn: {
     token: {
-      key: fs.readFileSync("./certs/apns-sama-project-key.json"),
+      key: fs.readFileSync("./certs/apns-sama-project-key.json", "utf8"),
       keyId: process.env.APN_KEY_ID,
       teamId: process.env.APN_TEAM_ID,
     },
@@ -52,20 +52,20 @@ const settings = {
 const defaultPushMessage = { title: "Title", body: "Body", message: "payload" };
 
 const pushNotificationProcess = async (job, done) => {
-  const { devices, message, platform } = job.data;
-  const registeredDevices = [];
+  const { devices, message } = job.data;
+  const registeredDevices = { ios: [], android: [], web: [] };
 
   for (const device of devices) {
-    switch (platform) {
+    switch (device.platform) {
       case "ios":
-        registeredDevices.push(device.device_token);
+        registeredDevices.ios.push(device.device_token);
         break;
-      case "androind":
-        registeredDevices.push(device.device_token);
+      case "android":
+        registeredDevices.android.push(device.device_token);
         break;
       case "web":
       default:
-        registeredDevices.push({
+        registeredDevices.web.push({
           endpoint: device.web_endpoint,
           expirationTime: null,
           keys: { p256dh: device.web_key_p256dh, auth: device.web_key_auth },
@@ -74,37 +74,52 @@ const pushNotificationProcess = async (job, done) => {
     }
   }
 
-  //TODO: reed fields for notification from queue, also add list of allowed fileds for message
-  const decodedMessage = decodeBase64(message);
-  const pushMessage = decodedMessage || defaultPushMessage;
-
   const push = new PushNotifications(settings);
 
-  try {
-    const sentPushes = (await push.send(registeredDevices, pushMessage))[0];
+  const closeJob = () => {
+    job.progress(100);
+    done();
+  };
 
-    for (let message of sentPushes.message) {
-      if (message.error) {
-        const pushSubscriptionRecord = await PushSubscription.findOne({
-          web_endpoint: message.regId.endpoint,
-        });
-        if (pushSubscriptionRecord) {
-          await pushSubscriptionRecord.delete();
-          console.log(
-            "[pushNotificationProcess] removed failed subscription",
-            message
-          );
+  for (const platform in registeredDevices) {
+    if (!registeredDevices[platform].length) continue;
+
+    let decodedMessage = decodeBase64(message);
+
+    switch (platform) {
+      case "android":
+        decodedMessage = { custom: { ...decodedMessage } };
+        break;
+    }
+
+    const pushMessage = decodedMessage || defaultPushMessage;
+
+    try {
+      const sentPushes = (
+        await push.send(registeredDevices[platform], pushMessage)
+      )[0];
+
+      for (let message of sentPushes.message) {
+        if (message.error) {
+          const pushSubscriptionRecord = await PushSubscription.findOne({
+            web_endpoint: message.regId.endpoint,
+          });
+          if (pushSubscriptionRecord) {
+            await pushSubscriptionRecord.delete();
+            console.log(
+              `[pushNotificationProcess:${platform}] removed failed subscription`,
+              message
+            );
+            closeJob();
+          }
         }
       }
+      console.log(`[pushNotificationProcess:${platform}] DONE`);
+    } catch (error) {
+      console.error(`[pushNotificationProcess:${platform}] error`, error);
     }
-    console.log("[pushNotificationProcess] DONE");
-  } catch (error) {
-    console.error(`[pushNotificationProcess] error`, error);
   }
-
-  job.progress(100);
-
-  done();
+  closeJob();
 };
 
 pushNotificationQueue.process(pushNotificationProcess);
