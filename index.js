@@ -33,7 +33,7 @@ const settings = {
       keyId: process.env.APN_KEY_ID,
       teamId: process.env.APN_TEAM_ID,
     },
-    production: process.env.APN_IS_PRODUCTION,
+    production: process.env.APN_IS_PRODUCTION === "true" ? true : false,
   },
   web: {
     vapidDetails: {
@@ -54,6 +54,13 @@ const defaultPushMessage = { title: "Title", body: "Body", message: "payload" };
 const pushNotificationProcess = async (job, done) => {
   const { devices, message } = job.data;
   const registeredDevices = { ios: [], android: [], web: [] };
+
+  const closeJob = () => {
+    job.progress(100);
+    done();
+  };
+
+  if (devices?.length) closeJob();
 
   for (const device of devices) {
     switch (device.platform) {
@@ -76,11 +83,6 @@ const pushNotificationProcess = async (job, done) => {
 
   const push = new PushNotifications(settings);
 
-  const closeJob = () => {
-    job.progress(100);
-    done();
-  };
-
   for (const platform in registeredDevices) {
     if (!registeredDevices[platform].length) continue;
 
@@ -93,6 +95,8 @@ const pushNotificationProcess = async (job, done) => {
     }
 
     const pushMessage = decodedMessage || defaultPushMessage;
+    console.log("pushMessage", pushMessage);
+    platform === "ios" && (pushMessage.topic = process.env.APN_TOPIC);
 
     try {
       const sentPushes = (
