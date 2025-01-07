@@ -96,6 +96,7 @@ const pushNotificationProcess = async (job, done) => {
 
     const pushMessage = decodedMessage || defaultPushMessage;
     console.log("pushMessage", pushMessage);
+    pushMessage.topic = process.env.APN_TOPIC;
 
     try {
       const sentPushes = (
