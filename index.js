@@ -33,7 +33,7 @@ const settings = {
       keyId: process.env.APN_KEY_ID,
       teamId: process.env.APN_TEAM_ID,
     },
-    production: process.env.APN_IS_PRODUCTION,
+    production: process.env.APN_IS_PRODUCTION === "true" ? true : false,
   },
   web: {
     vapidDetails: {
@@ -96,6 +96,7 @@ const pushNotificationProcess = async (job, done) => {
 
     const pushMessage = decodedMessage || defaultPushMessage;
     console.log("pushMessage", pushMessage);
+    platform === "ios" && (pushMessage.topic = process.env.APN_TOPIC);
 
     try {
       const sentPushes = (
