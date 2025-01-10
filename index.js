@@ -98,24 +98,11 @@ const pushNotificationProcess = async (job, done) => {
         break;
       case "ios":
         decodedMessage = {
-          aps: {
-            alert: {
-              title: decodedMessage.title,
-              body: decodedMessage.body,
-              subtitle: decodedMessage.cid,
-            },
-          },
+          alert: { title: decodedMessage.title, body: decodedMessage.body },
+          mutableСontent: 1,
+          custom: JSON.stringify(decodedMessage),
         };
         break;
-      // case "ios":
-      //   decodedMessage = {
-      //     aps: {
-      //       alert: { title: decodedMessage.title, body: decodedMessage.body },
-      //       "mutable-content": 1,
-      //     },
-      //     payload: JSON.stringify(decodedMessage),
-      //   };
-      //   break;
     }
 
     const pushMessage = decodedMessage || defaultPushMessage;
