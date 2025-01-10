@@ -100,7 +100,6 @@ const pushNotificationProcess = async (job, done) => {
         decodedMessage = {
           aps: {
             alert: { title: decodedMessage.title, body: decodedMessage.body },
-            "mutable-content": 1,
           },
         };
         break;
@@ -112,6 +111,7 @@ const pushNotificationProcess = async (job, done) => {
       //     },
       //     payload: JSON.stringify(decodedMessage),
       //   };
+      //   break;
     }
 
     const pushMessage = decodedMessage || defaultPushMessage;
