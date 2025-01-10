@@ -98,7 +98,8 @@ const pushNotificationProcess = async (job, done) => {
         break;
       case "ios":
         decodedMessage = {
-          alert: { title: decodedMessage.title, body: decodedMessage.body },
+          title: decodedMessage.title,
+          body: decodedMessage.body,
           mutableСontent: 1,
           custom: JSON.stringify(decodedMessage),
         };
