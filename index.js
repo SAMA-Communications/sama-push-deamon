@@ -53,6 +53,8 @@ const defaultPushMessage = { title: "Title", body: "Body", message: "payload" };
 
 const pushNotificationProcess = async (job, done) => {
   const { devices, message } = job.data;
+  console.log("devices and message:", devices, message);
+
   const registeredDevices = { ios: [], android: [], web: [] };
 
   const closeJob = () => {
@@ -83,10 +85,12 @@ const pushNotificationProcess = async (job, done) => {
 
   const push = new PushNotifications(settings);
 
+  console.log("registeredDevices:", registeredDevices);
   for (const platform in registeredDevices) {
     if (!registeredDevices[platform].length) continue;
 
     let decodedMessage = decodeBase64(message);
+    console.log("decodedMessage:", decodedMessage);
 
     switch (platform) {
       case "android":
