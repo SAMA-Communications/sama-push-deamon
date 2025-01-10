@@ -100,7 +100,7 @@ const pushNotificationProcess = async (job, done) => {
         decodedMessage = {
           title: decodedMessage.title,
           body: decodedMessage.body,
-          mutableСontent: 1,
+          mutableContent: 1,
           custom: { ...decodedMessage },
         };
         break;
