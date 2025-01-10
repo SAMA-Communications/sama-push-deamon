@@ -98,9 +98,6 @@ const pushNotificationProcess = async (job, done) => {
         break;
       case "ios":
         decodedMessage = {
-          title: decodedMessage.title,
-          body: decodedMessage.body,
-          cid: decodedMessage.cid,
           aps: {
             alert: {
               title: decodedMessage.title,
@@ -108,7 +105,6 @@ const pushNotificationProcess = async (job, done) => {
               subtitle: decodedMessage.cid,
             },
           },
-          payload: JSON.stringify(decodedMessage),
         };
         break;
       // case "ios":
