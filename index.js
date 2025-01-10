@@ -92,11 +92,19 @@ const pushNotificationProcess = async (job, done) => {
       case "android":
         decodedMessage = { custom: { ...decodedMessage } };
         break;
+      case "ios":
+        decodedMessage = {
+          aps: {
+            alert: { title: decodedMessage.title, body: decodedMessage.body },
+            "mutable-content": 1,
+          },
+          payload: JSON.stringify(decodedMessage),
+        };
     }
 
     const pushMessage = decodedMessage || defaultPushMessage;
     console.log("pushMessage", pushMessage);
-    platform === "ios" && (pushMessage.topic = process.env.APN_TOPIC);
+    if (platform === "ios") pushMessage.topic = process.env.APN_TOPIC;
 
     try {
       const sentPushes = (
