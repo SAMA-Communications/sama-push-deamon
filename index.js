@@ -97,7 +97,12 @@ const pushNotificationProcess = async (job, done) => {
         decodedMessage = { custom: { ...decodedMessage } };
         break;
       case "ios":
-        decodedMessage = { ...decodedMessage, "mutable-content": 1 };
+        decodedMessage = {
+          aps: {
+            alert: { title: decodedMessage.title, body: decodedMessage.body },
+            "mutable-content": 1,
+          },
+        };
         break;
       // case "ios":
       //   decodedMessage = {
