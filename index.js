@@ -52,7 +52,8 @@ const settings = {
 const defaultPushMessage = { title: "Title", body: "Body", message: "payload" };
 
 const pushNotificationProcess = async (job, done) => {
-  const { devices, message } = job.data;
+  const { devices = [], message } = job.data;
+
   const registeredDevices = { ios: [], android: [], web: [] };
 
   const closeJob = () => {
@@ -87,16 +88,27 @@ const pushNotificationProcess = async (job, done) => {
     if (!registeredDevices[platform].length) continue;
 
     let decodedMessage = decodeBase64(message);
+    decodedMessage.is_encrypted && (decodedMessage.body = "New message");
 
     switch (platform) {
       case "android":
         decodedMessage = { custom: { ...decodedMessage } };
         break;
+      case "ios":
+        decodedMessage = {
+          title: decodedMessage.title,
+          body: decodedMessage.body,
+          mutableContent: 1,
+          custom: {
+            ...decodedMessage,
+            payload: JSON.stringify(decodedMessage),
+          },
+        };
+        break;
     }
 
     const pushMessage = decodedMessage || defaultPushMessage;
-    console.log("pushMessage", pushMessage);
-    platform === "ios" && (pushMessage.topic = process.env.APN_TOPIC);
+    if (platform === "ios") pushMessage.topic = process.env.APN_TOPIC;
 
     try {
       const sentPushes = (
