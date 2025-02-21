@@ -48,7 +48,7 @@ const settings = {
 const defaultPushMessage = { title: "Title", body: "Body", message: "payload" };
 
 const pushNotificationProcess = async (job) => {
-  const { devices, message } = job.data;
+  const { devices = [], message } = job.data;
   const registeredDevices = { ios: [], android: [], web: [] };
 
   if (!devices?.length) return;
@@ -78,8 +78,23 @@ const pushNotificationProcess = async (job) => {
     if (!registeredDevices[platform].length) continue;
 
     let decodedMessage = decodeBase64(message);
-    if (platform === "android") {
-      decodedMessage = { custom: { ...decodedMessage } };
+    decodedMessage.is_encrypted && (decodedMessage.body = "New message");
+
+    switch (platform) {
+      case "android":
+        decodedMessage = { custom: { ...decodedMessage } };
+        break;
+      case "ios":
+        decodedMessage = {
+          title: decodedMessage.title,
+          body: decodedMessage.body,
+          mutableContent: 1,
+          custom: {
+            ...decodedMessage,
+            payload: JSON.stringify(decodedMessage),
+          },
+        };
+        break;
     }
 
     const pushMessage = decodedMessage || defaultPushMessage;
