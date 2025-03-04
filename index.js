@@ -1,11 +1,11 @@
 import PushNotifications from "node-pushnotifications";
 import PushSubscription from "./model/push_subscription.js";
-import Queue from "bull";
 import db from "./lib/db.js";
 import decodeBase64 from "./utils/decode_base64.js";
 import fs from "fs";
+import { Worker } from "bullmq";
 
-import serviceAccountKey from "./certs/firebase-sama-project-key.json" assert { type: "json" };
+import serviceAccountKey from "./certs/firebase-sama-project-key.json" with { type: "json" };
 
 db.connectToDB(async (err) => {
   if (err) {
@@ -16,10 +16,6 @@ db.connectToDB(async (err) => {
   }
 });
 
-const pushNotificationQueue = new Queue(
-  process.env.SAMA_PUSH_QUEUE_NAME,
-  process.env.REDIS_URL
-);
 
 const settings = {
   fcm: {
@@ -51,16 +47,11 @@ const settings = {
 
 const defaultPushMessage = { title: "Title", body: "Body", message: "payload" };
 
-const pushNotificationProcess = async (job, done) => {
-  const { devices, message } = job.data;
+const pushNotificationProcess = async (job) => {
+  const { devices = [], message } = job.data;
   const registeredDevices = { ios: [], android: [], web: [] };
 
-  const closeJob = () => {
-    job.progress(100);
-    done();
-  };
-
-  if (devices?.length) closeJob();
+  if (!devices?.length) return;
 
   for (const device of devices) {
     switch (device.platform) {
@@ -87,21 +78,34 @@ const pushNotificationProcess = async (job, done) => {
     if (!registeredDevices[platform].length) continue;
 
     let decodedMessage = decodeBase64(message);
+    decodedMessage.is_encrypted && (decodedMessage.body = "New message");
 
     switch (platform) {
       case "android":
         decodedMessage = { custom: { ...decodedMessage } };
         break;
+      case "ios":
+        decodedMessage = {
+          title: decodedMessage.title,
+          body: decodedMessage.body,
+          mutableContent: 1,
+          custom: {
+            ...decodedMessage,
+            payload: JSON.stringify(decodedMessage),
+          },
+        };
+        break;
     }
 
     const pushMessage = decodedMessage || defaultPushMessage;
-    console.log("pushMessage", pushMessage);
-    platform === "ios" && (pushMessage.topic = process.env.APN_TOPIC);
+    if (platform === "ios") pushMessage.topic = process.env.APN_TOPIC;
+
 
     try {
       const sentPushes = (
         await push.send(registeredDevices[platform], pushMessage)
       )[0];
+      
 
       for (let message of sentPushes.message) {
         if (message.error) {
@@ -114,7 +118,6 @@ const pushNotificationProcess = async (job, done) => {
               `[pushNotificationProcess:${platform}] removed failed subscription`,
               message
             );
-            closeJob();
           }
         }
       }
@@ -123,7 +126,16 @@ const pushNotificationProcess = async (job, done) => {
       console.error(`[pushNotificationProcess:${platform}] error`, error);
     }
   }
-  closeJob();
 };
 
-pushNotificationQueue.process(pushNotificationProcess);
+const worker = new Worker(process.env.SAMA_PUSH_QUEUE_NAME, pushNotificationProcess, {
+  connection: { url: process.env.REDIS_URL },
+});
+
+worker.on("completed", (job) => {
+  console.log(`[Worker] Job ${job.id} completed`);
+});
+
+worker.on("failed", (job, err) => {
+  console.error(`[Worker] Job ${job?.id} failed`, err);
+});
