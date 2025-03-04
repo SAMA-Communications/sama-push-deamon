@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+### Improvements
+
+- Migrated from `bull` to `bullmq`
+- Updated Node to version 22.14
+- Updated mongoDB to v6.0
+- Improved push object for iOS notifications
+
 ## 0.2.0
 
 ### Improvements
