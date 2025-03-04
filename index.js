@@ -100,6 +100,7 @@ const pushNotificationProcess = async (job) => {
     const pushMessage = decodedMessage || defaultPushMessage;
     if (platform === "ios") pushMessage.topic = process.env.APN_TOPIC;
 
+
     try {
       const sentPushes = (
         await push.send(registeredDevices[platform], pushMessage)
